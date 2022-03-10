@@ -1,12 +1,10 @@
 import axios from 'axios';
-import ImagenProfile from './ImagenProfile'
 import '../../css/bulma.css'
 
 function Profile() {
     var useData={
         'id':localStorage.getItem('id'),
         'token':localStorage.getItem('tokenLocal'),
-        'url_img':"http://localhost:8000"+localStorage.getItem('url')
     }
     window.onload = function get_data_user() {
         axios
@@ -21,16 +19,27 @@ function Profile() {
             .catch((error)=>{
                 console.log(error)
             })
+        axios
+            .get("http://localhost:8000/api/v1/profile/imagenes/" +useData.id,{
+                    headers: {'Content-Type': 'application/json',
+                    'Authorization': 'Token ' + useData.token ,},
+                })
+                .then((response)=>{
+                    console.log(response.data.pay_load.image)
+                    var url="http://localhost:8000"+response.data.pay_load.image;
+                    if (url!="http://localhost:8000undefined") {
+                        document.getElementById('image').src=url
+                    }else{
+                        document.getElementById('image').src="http://localhost:8000/media/img/nulo.jpg"
+                    }
+                })
+                .catch((error)=>{
+                    console.log(error)
+                })
     }
     const salir = ()=>{
         localStorage.removeItem('tokenLocal')
         localStorage.removeItem('id')
-        localStorage.removeItem('url')
-        localStorage.removeItem('last_name')
-        localStorage.removeItem('urlProfile')
-        localStorage.removeItem('first_name')
-        localStorage.removeItem('username')
-        localStorage.removeItem('email')
         window.location.href = '/'
     }
     return (
@@ -40,7 +49,13 @@ function Profile() {
                     <div className="card">
                         <div className="has-text-centered">
                             <h2 className="title is-3">USER</h2>
-                            <ImagenProfile url={useData.url_img}/>
+                            <div className='column card-image'>
+                                <div className='box'>
+                                    <figure className="image is-1by1">
+                                        <img className="is-rounded"  id='image'  alt="Placeholder image"/>
+                                    </figure>
+                                </div>
+                            </div>
                             <div className="card-content">
                                 <div className="media">
                                     <div className="content">

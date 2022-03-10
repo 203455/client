@@ -3,7 +3,6 @@ import '../../css/bulma.css'
 
 function Update() {
     var useData = {
-        'url_img': "http://localhost:8000"+localStorage.getItem('url'),
         'id':localStorage.getItem('id'),
         'token':localStorage.getItem('tokenLocal')
     }
@@ -21,6 +20,23 @@ function Update() {
             .catch((error)=>{
                 console.log(error)
             })
+        axios
+            .get("http://localhost:8000/api/v1/profile/imagenes/" +useData.id,{
+                    headers: {'Content-Type': 'application/json',
+                    'Authorization': 'Token ' + useData.token ,},
+                })
+                .then((response)=>{
+                    console.log(response.data.pay_load.image)
+                    var url="http://localhost:8000"+response.data.pay_load.image;
+                    if (url!="http://localhost:8000undefined") {
+                        document.getElementById('image').src=url
+                    }else{
+                        document.getElementById('image').src="http://localhost:8000/media/img/nulo.jpg"
+                    }
+                })
+                .catch((error)=>{
+                    console.log(error)
+                })
     }
     const consumir_actulizar = () =>{
 
@@ -59,23 +75,59 @@ function Update() {
               });
     }
     const consumir_actualizarFoto =()=>{
-        var putData ={
-            "image": document.getElementById('image').value,
-            "id_user":useData.id
-        }
-        axios
+        let putData = new FormData();
+        putData.append('id_user',useData.id);
+        putData.append('image', document.getElementById('img').files[0]);
+        var url = document.getElementById('image').src
+        console.log(url)
+        if (url!="http://localhost:8000/media/img/nulo.jpg") {
+            axios
             .put("http://localhost:8000/api/v1/profile/imagenes/"+useData.id,putData, {
-                Headers: { "Content-Type": "application/json", 'Authorization': 'Token ' + useData.token},
+                headers: { "Content-Type": "multipart/form-data", 'Authorization': 'Token ' + useData.token},
               })
             .then((response) => {
                 console.log(response.data);
-                localStorage.setItem('urlProfile',response.data.pay_load.url_img)
                 window.location.href='/Profile'
               })
             .catch((error) => {
                 console.log(error.response.data)
                 alert("Incorrecto")
               });
+        }else{
+            axios
+                .post("http://localhost:8000/api/v1/profile/imagenes/",putData, {
+                    headers: { "Content-Type": "multipart/form-data", 
+                                'Authorization': 'Token ' + useData.token},
+                })
+                .then((response)=>{
+                    console.log(response)
+                    window.location.href='/Profile'
+                })
+                .catch((error)=>{
+                    console.log(error)
+                })
+        }
+    }
+
+    const consumir_eliminar = ()=>{
+        var url = document.getElementById('image').src
+        console.log(url)
+        if (url!="http://localhost:8000/media/img/nulo.jpg") {
+            axios
+            .delete("http://localhost:8000/api/v1/profile/imagenes/"+useData.id, {
+                headers: { "Content-Type": "multipart/form-data", 'Authorization': 'Token ' + useData.token},
+              })
+            .then((response) => {
+                console.log(response.data);
+                window.location.href='/Profile'
+              })
+            .catch((error) => {
+                console.log(error)
+                alert("Incorrecto")
+              });
+        }else{
+            alert("No hay una Imagen por eliminar")
+        }
     }
     return (
         <section className="hero is-fullheight">
@@ -85,14 +137,20 @@ function Update() {
                 <div className='column card-image'>
                     <div className='box'>
                         <figure className="image is-1by1">
-                            <img className="is-rounded" src={useData.url_img} alt="Placeholder image"/>
+                            <img className="is-rounded" id='image' alt="Placeholder image"/>
                         </figure>
                         <br/>
-                        <input className='input' type='file' id='image'></input>
+                        <input className='input' type='file' id='img'></input>
                         <br/>
                         <header>
                             <button className="button is-block is-primary is-medium is-rounded" onClick={consumir_actualizarFoto}>
                                 Actualizar Foto
+                            </button>
+                        </header>
+                        <br/>
+                        <header>
+                            <button className="button is-block is-danger is-medium is-rounded" onClick={consumir_eliminar}>
+                                Eliminar Foto
                             </button>
                         </header>
                     </div>

@@ -14,18 +14,6 @@ function Login() {
       .then((response) => {
         localStorage.setItem('tokenLocal',response.data.token)
         localStorage.setItem('id',response.data.id)
-        axios
-          .get("http://localhost:8000/api/v1/profile/imagenes/" + response.data.id,{
-            headers: {'Content-Type': 'application/json',
-            'Authorization': 'Token ' + response.data.token,},
-          })
-          .then((info)=>{
-            localStorage.setItem('url',info.data.pay_load.image)
-            alert(info.data.pay_load.url_img)
-          })
-          .catch(()=>{
-            localStorage.setItem('urlProfile',undefined)
-          })
         window.location.href = "/Profile"
         })
       .catch((error) => {
